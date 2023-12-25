@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
-import { emailSchema, loginSchema, resetPasswordSchema, signupSchema } from '../schema/auth.schema';
+import { emailSchema, loginSchema, loginVerificationSchema, resetPasswordSchema, signupSchema } from '../schema/auth.schema';
 
 export const validator =
     (res: Response, next: NextFunction) =>
@@ -21,6 +21,12 @@ export const signupValidator = (req: Request, res: Response, next: NextFunction)
 
 export const loginValidator = (req: Request, res: Response, next: NextFunction) =>
     validator(res, next)(loginSchema, req.body);
+
+export const verifyLoginValidator = (req: Request, res: Response, next: NextFunction) =>
+    validator(res, next)(loginVerificationSchema, req.body);
+
+export const LoginLinkValidator = (req: Request, res: Response, next: NextFunction) =>
+    validator(res, next)(loginVerificationSchema, req.params);
 
 export const emailValidator = (req: Request, res: Response, next: NextFunction) =>
     validator(res, next)(emailSchema, req.body);

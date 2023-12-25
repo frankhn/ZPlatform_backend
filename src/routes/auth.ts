@@ -3,8 +3,10 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 import authController from '../controllers/auth.controller';
 import * as validations from './validations/auth.validations';
 import CustomError from '../helpers/CustomError';
-import { HTTP_BAD_REQUEST, HTTP_CREATED, HTTP_SERVER_ERROR } from '../constants/httpStatusCodes';
+import { HTTP_BAD_REQUEST, HTTP_CREATED, HTTP_OK, HTTP_SERVER_ERROR } from '../constants/httpStatusCodes';
 import { generateToken } from '../helpers';
+import { memoryCache } from '../helpers/cacheLogin';
+import { generateVerificationCode } from '../helpers/generateVerificationCode';
 
 const router = express.Router();
 
@@ -38,12 +40,61 @@ router.post(
       const { success, accessToken, user, message } = await authController.loginUser(
         req.body,
       );
-      return res.status(HTTP_CREATED).json({
-        success,
-        accessToken,
-        user,
-        message,
+      const cacheUser = JSON.stringify({ success, accessToken, user, message })
+      const code = generateVerificationCode()
+      memoryCache.storeExpiringItem(code, cacheUser, 10 * 60)
+      return res.status(HTTP_OK).json({
+        message: "Code sent",
+        code,
       });
+    } catch (error) {
+      if (error instanceof CustomError) {
+        return res.status(HTTP_BAD_REQUEST).json({ error: error.message });
+      }
+      return res.status(HTTP_SERVER_ERROR).json({ error: '' });
+    }
+  },
+);
+
+router.post(
+  '/auth/verify-login',
+  validations.verifyLoginValidator,
+  async (req: Request, res: Response) => {
+    try {
+      const { code } = req.body
+      if (memoryCache.hasItem(code)) {
+        let userData: any = await memoryCache.retrieveItemValue(code)
+        userData = JSON.parse(userData as string)
+        return res.status(HTTP_CREATED).json({
+          ...userData
+        });
+      } else {
+        return res.status(HTTP_BAD_REQUEST).json({ error: "Invalid request" });
+      }
+    } catch (error) {
+      if (error instanceof CustomError) {
+        return res.status(HTTP_BAD_REQUEST).json({ error: error.message });
+      }
+      return res.status(HTTP_SERVER_ERROR).json({ error: '' });
+    }
+  },
+);
+
+router.get(
+  '/auth/login-link/:code',
+  validations.LoginLinkValidator,
+  async (req: Request, res: Response) => {
+    try {
+      const { code } = req.params
+      if (memoryCache.hasItem(code)) {
+        let userData: any = await memoryCache.retrieveItemValue(code)
+        userData = JSON.parse(userData as string)
+        return res.status(HTTP_CREATED).json({
+          ...userData
+        });
+      } else {
+        return res.status(HTTP_BAD_REQUEST).json({ error: "Invalid request" });
+      }
     } catch (error) {
       if (error instanceof CustomError) {
         return res.status(HTTP_BAD_REQUEST).json({ error: error.message });
