@@ -117,7 +117,7 @@ The system is built using Node.js and TypeScript with the TSOA library configura
 
 ## Presentation Deck
 
-[Google Presentation](link-to-your-presentation-deck)
+[Google Presentation](https://docs.google.com/presentation/d/1tdeAsyfR-V2uwliwbEF1xZnMgFaIAVdDRGmtHHEkNFg/edit?usp=sharing)
 
 ## Testing
 - Tests are implemented to ensure the reliability of both the backend and UI.
