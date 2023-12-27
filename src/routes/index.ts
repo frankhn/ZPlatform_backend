@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import usersRoutes from './users';
+import documentsRoutes from './documents';
 import authRoutes from './auth';
 import authMiddleware from '../middlewares/auth.middleware';
 
@@ -14,6 +15,6 @@ entryPoint.get('/', (req, res) => {
 
 routes.use(entryPoint, authRoutes);
 
-routes.use(authMiddleware.isAuthenticated, usersRoutes)
+routes.use(authMiddleware.isAuthenticated, usersRoutes, documentsRoutes)
 
 export default routes;
